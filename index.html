@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مطعم إيجاك</title>
+  <style>
+    body {
+      font-family: Tahoma, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background: #fff;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .menu {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+    }
+    .item {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .item img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 0.5rem;
+    }
+    .item h3 {
+      font-size: 1.1rem;
+      margin: 0.5rem 0;
+    }
+    .item p {
+      font-size: 0.9rem;
+      margin: 0.3rem 0;
+    }
+    .item button {
+      padding: 0.7rem;
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+    }
+    .cart {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 350px;
+      height: 100%;
+      background: #fff;
+      box-shadow: -2px 0 6px rgba(0,0,0,0.2);
+      padding: 1rem;
+      transition: right 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .cart.open {
+      right: 0;
+    }
+    .cart h2 {
+      margin-top: 0;
+    }
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .cart-item button {
+      background: #f44336;
+      border: none;
+      color: #fff;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .cart-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #2196F3;
+      color: #fff;
+      padding: 1rem;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .checkout {
+      background: #4CAF50;
+      color: #fff;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>منيو مطعم إيجاك</header>
+  <div class="menu" id="menu"></div>
+  <div class="cart" id="cart">
+    <h2>السلة</h2>
+    <div class="cart-items" id="cart-items"></div>
+    <button class="checkout" onclick="checkout()">إرسال الطلب</button>
+  </div>
+  <div class="cart-toggle" onclick="toggleCart()">🛒</div>
+
+  <script>
+    const menuData = [
+      {id:1, category:'Sandwiches / السندوتشات', name:'Smoked Chicken Burger / برجر  مدخن دجاج', description:'Crispy chicken burger with lettuce & sauce / برجر دجاج كرسبي مع الخس والصوص', price:'17-25', image:''},
+      {id:2, category:'Sandwiches / السندوتشات', name:'Smoked Chicken Burger Spicy / برجر مدخن دجاج حار', description:'Crispy spicy chicken burger with lettuce & sauce / برجر دجاج كرسبي حار مع الخس والصوص', price:'17-25', image:''},
+      {id:3, category:'Meals / الوجبات', name:'Smoked Broasted / بروستد مدخن', description:'4 pcs smoked broasted chicken with fries & sauce / ٤ قطع دجاج بروستد مدخن مع البطاطس والصوص', price:'29', image:''},
+      {id:4, category:'Meals / الوجبات', name:'Spicy Smoked Broasted / بروستد مدخن حار', description:'4 pcs spicy smoked broasted chicken with fries & sauce / ٤ قطع دجاج بروستد مدخن حار مع البطاطس والصوص', price:'29', image:''},
+      {id:5, category:'Meals / الوجبات', name:'Smoked Crispy / كريسبي مدخن', description:'Smoked crispy chicken with fries & sauce / دجاج كريسبي مدخن مع البطاطس والصوص', price:'25', image:''},
+      {id:6, category:'Meals / الوجبات', name:'Spicy Smoked Crispy / كريسبي مدخن حار', description:'Spicy smoked crispy chicken with fries & sauce / دجاج كريسبي مدخن حار مع البطاطس والصوص', price:'25', image:''},
+      {id:7, category:'Meals / الوجبات', name:'Chicken Fillet / فيليه دجاج', description:'Chicken fillet with fries & sauce / فيليه دجاج مع البطاطس والصوص', price:'25', image:''},
+      {id:8, category:'Meals / الوجبات', name:'Chicken Fillet Spicy / فيليه دجاج حار', description:'Spicy chicken fillet with fries & sauce / فيليه دجاج حار مع البطاطس والصوص', price:'25', image:''},
+      {id:9, category:'Meals / الوجبات', name:'Smoked Chicken Fillet / فيليه دجاج مدخن', description:'Smoked chicken fillet with fries & sauce / فيليه دجاج مدخن مع البطاطس والصوص', price:'25', image:''},
+      {id:10, category:'Meals / الوجبات', name:'Smoked Chicken Fillet Spicy / فيليه دجاج مدخن حار', description:'Spicy smoked chicken fillet with fries & sauce / فيليه دجاج مدخن حار مع البطاطس والصوص', price:'25', image:''},
+      {id:11, category:'Meals / الوجبات', name:'Chicken Strips / ستربس دجاج', description:'Chicken strips with fries & sauce / ستربس دجاج مع البطاطس والصوص', price:'25', image:''},
+      {id:12, category:'Meals / الوجبات', name:'Chicken Strips Spicy / ستربس دجاج حار', description:'Spicy chicken strips with fries & sauce / ستربس دجاج حار مع البطاطس والصوص', price:'25', image:''},
+      {id:13, category:'Meals / الوجبات', name:'Smoked Chicken Strips / ستربس دجاج مدخن', description:'Smoked chicken strips with fries & sauce / ستربس دجاج مدخن مع البطاطس والصوص', price:'25', image:''},
+      {id:14, category:'Meals / الوجبات', name:'Smoked Chicken Strips Spicy / ستربس دجاج مدخن حار', description:'Spicy smoked chicken strips with fries & sauce / ستربس دجاج مدخن حار مع البطاطس والصوص', price:'25', image:''},
+      {id:15, category:'Meals / الوجبات', name:'Chicken Nuggets / ناجتس دجاج', description:'Chicken nuggets with fries & sauce / ناجتس دجاج مع البطاطس والصوص', price:'25', image:''},
+      {id:16, category:'Meals / الوجبات', name:'Chicken Nuggets Spicy / ناجتس دجاج حار', description:'Spicy chicken nuggets with fries & sauce / ناجتس دجاج حار مع البطاطس والصوص', price:'25', image:''},
+      {id:17, category:'Meals / الوجبات', name:'Smoked Chicken Nuggets / ناجتس دجاج مدخن', description:'Smoked chicken nuggets with fries & sauce / ناجتس دجاج مدخن مع البطاطس والصوص', price:'25', image:''},
+      {id:18, category:'Meals / الوجبات', name:'Smoked Chicken Nuggets Spicy / ناجتس دجاج مدخن حار', description:'Spicy smoked chicken nuggets with fries & sauce / ناجتس دجاج مدخن حار مع البطاطس والصوص', price:'25', image:''},
+      {id:19, category:'Meals / الوجبات', name:'Chicken Popcorn / بوب كورن دجاج', description:'Chicken popcorn with fries & sauce / بوب كورن دجاج مع البطاطس والصوص', price:'25', image:''},
+      {id:20, category:'Meals / الوجبات', name:'Chicken Popcorn Spicy / بوب كورن دجاج حار', description:'Spicy chicken popcorn with fries & sauce / بوب كورن دجاج حار مع البطاطس والصوص', price:'25', image:''},
+      {id:21, category:'Meals / الوجبات', name:'Smoked Chicken Popcorn / بوب كورن دجاج مدخن', description:'Smoked chicken popcorn with fries & sauce / بوب كورن دجاج مدخن مع البطاطس والصوص', price:'25', image:''}
+    ];
+
+    const menuContainer = document.getElementById("menu");
+    const cartContainer = document.getElementById("cart-items");
+    let cart = [];
+
+    function renderMenu(){
+      menuData.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <img src="${item.image || 'https://via.placeholder.com/300x150'}" alt="${item.name}" />
+          <h3>${item.name}</h3>
+          <p>${item.description}</p>
+          <p><strong>${item.price} ريال</strong></p>
+          <button onclick="addToCart(${item.id})">اضف للسلة</button>
+        `;
+        menuContainer.appendChild(div);
+      });
+    }
+
+    function addToCart(id){
+      const item = menuData.find(m => m.id === id);
+      const found = cart.find(c => c.id === id);
+      if(found){
+        found.qty++;
+      } else {
+        cart.push({...item, qty:1});
+      }
+      renderCart();
+    }
+
+    function removeFromCart(id){
+      cart = cart.filter(c => c.id !== id);
+      renderCart();
+    }
+
+    function renderCart(){
+      cartContainer.innerHTML = '';
+      cart.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "cart-item";
+        div.innerHTML = `
+          <span>${c.name} x${c.qty}</span>
+          <button onclick="removeFromCart(${c.id})">حذف</button>
+        `;
+        cartContainer.appendChild(div);
+      });
+    }
+
+    function toggleCart(){
+      document.getElementById("cart").classList.toggle("open");
+    }
+
+    function checkout(){
+      const payload = {
+        items: cart,
+        total: cart.reduce((sum,c) => sum + (parseFloat(c.price) || 0) * c.qty, 0),
+        time: new Date().toISOString()
+      };
+      alert("سيتم إرسال الطلب: " + JSON.stringify(payload, null, 2));
+      // هنا تقدر ترسل البيانات للـ webhook حق n8n باستخدام fetch
+      // fetch('YOUR_N8N_WEBHOOK_URL', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+    }
+
+    renderMenu();
+  </script>
+</body>
+</html>
