@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>مطعم بروستا</title>
+  <!-- ↓↓↓ (جديد) سكربت تيليجرام ويب-أب ↓↓↓ -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- ↑↑↑ لا تحذف هذا السطر ↑↑↑ -->
   <style>
     body {
       font-family: Tahoma, sans-serif;
@@ -19,6 +22,24 @@
       font-size: 1.5rem;
       font-weight: bold;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .checkout-global {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #f9f9f9;
+      text-align: center;
+      padding: 0.5rem;
+    }
+    .checkout-global button {
+      background: #4CAF50;
+      color: #fff;
+      padding: 0.8rem 1.2rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
     }
     .menu {
       display: grid;
@@ -50,15 +71,27 @@
       font-size: 0.9rem;
       margin: 0.3rem 0;
     }
+    .item .actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
     .item button {
-      padding: 0.7rem;
+      padding: 0.6rem 0.8rem;
       background: #4CAF50;
       color: #fff;
       border: none;
       border-radius: 8px;
       cursor: pointer;
       font-size: 1rem;
-      margin-top: 0.5rem;
+    }
+    .item .qty-btn {
+      background: #2196F3;
+      padding: 0.4rem 0.7rem;
+      font-size: 1.2rem;
+      font-weight: bold;
     }
     .cart {
       position: fixed;
@@ -108,37 +141,37 @@
       cursor: pointer;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
-    .checkout {
-      background: #4CAF50;
-      color: #fff;
-      padding: 0.8rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1rem;
-    }
   </style>
 </head>
 <body>
   <header>منيو مطعم بروستا</header>
+  
+  <!-- زر إرسال الطلب تحت الهيدر -->
+  <div class="checkout-global">
+    <button onclick="checkout()">إرسال الطلب</button>
+  </div>
+
   <div class="menu" id="menu"></div>
   <div class="cart" id="cart">
     <h2>السلة</h2>
     <div class="cart-items" id="cart-items"></div>
-    <button class="checkout" onclick="checkout()">إرسال الطلب</button>
   </div>
   <div class="cart-toggle" onclick="toggleCart()">🛒</div>
 
   <script>
+    // (جديد) تهيئة خفيفة لويب-أب تيليجرام
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    if (tg) { try { tg.ready(); tg.expand(); } catch(_){} }
+
     const menuData = [
-      {id:1, category:'Sandwiches / السندوتشات', name:'Smoked Chicken Burger / برجر  مدخن دجاج', description:'Crispy chicken burger with lettuce & sauce / برجر دجاج كرسبي مع الخس والصوص', price:'17-25', image:''},
+      {id:1, category:'Sandwiches / السندوتشات', name:'Smoked Chicken Burger / برجر مدخن دجاج', description:'Crispy chicken burger with lettuce & sauce / برجر دجاج كرسبي مع الخس والصوص', price:'17-25', image:''},
       {id:2, category:'Sandwiches / السندوتشات', name:'Smoked Chicken Burger Spicy / برجر مدخن دجاج حار', description:'Crispy spicy chicken burger with lettuce & sauce / برجر دجاج كرسبي حار مع الخس والصوص', price:'17-25', image:''},
       {id:3, category:'Meals / الوجبات', name:'Smoked Broasted / بروستد مدخن', description:'4 pcs smoked broasted chicken with fries & sauce / ٤ قطع دجاج بروستد مدخن مع البطاطس والصوص', price:'29', image:''},
       {id:4, category:'Meals / الوجبات', name:'Spicy Smoked Broasted / بروستد مدخن حار', description:'4 pcs spicy smoked broasted chicken with fries & sauce / ٤ قطع دجاج بروستد مدخن حار مع البطاطس والصوص', price:'29', image:''},
       {id:5, category:'Meals / الوجبات', name:'Smoked Crispy / كريسبي مدخن', description:'Smoked crispy chicken with fries & sauce / دجاج كريسبي مدخن مع البطاطس والصوص', price:'25', image:''},
       {id:6, category:'Meals / الوجبات', name:'Spicy Smoked Crispy / كريسبي مدخن حار', description:'Spicy smoked crispy chicken with fries & sauce / دجاج كريسبي مدخن حار مع البطاطس والصوص', price:'26', image:''},
       {id:7, category:'Meals / الوجبات', name:'Smoked Crunchy / كرانشي مدخن', description:'Smoked crunchy chicken with fries & sauce / صدور دجاج مدخنة مع البطاطس والصوص', price:'32', image:''},
-      {id:8, category:'Meals / الوجبات', name:'Smoked Crunchy Spicy /  كرانشي مدخن حار', description:'Spicy smoked crunchy chicken with fries & sauce / صدور دجاج مدخنة حارة مع البطاطس والصوص', price:'31', image:''},
+      {id:8, category:'Meals / الوجبات', name:'Smoked Crunchy Spicy / كرانشي مدخن حار', description:'Spicy smoked crunchy chicken with fries & sauce / صدور دجاج مدخنة حارة مع البطاطس والصوص', price:'31', image:''},
       {id:9, category:'Meals / الوجبات', name:'Cheese Fries / بطاطس بالجبنة', description:'Fries topped with cheese / بطاطس مع جبنة', price:'14', image:''},
       {id:10, category:'Meals / الوجبات', name:'Smoked Chicken Fries / سموكد تشكن فرايز', description:'Fries topped with smoked chicken / بطاطس مع دجاج مدخن', price:'25', image:''},
       {id:11, category:'Meals / الوجبات', name:'Onion Rings / حلقات البصل', description:'Fried onion rings / حلقات بصل مقلية', price:'9', image:''},
@@ -148,25 +181,37 @@
       {id:15, category:'Sauces / الصوصات', name:'Garlic Sauce / صوص ثوم', description:'Garlic Sauce / صوص ثوم', price:'1', image:''},
       {id:16, category:'Sauces / الصوصات', name:'Cheese Sauce / صوص جبنة', description:'Cheese Sauce / صوص جبنة', price:'3', image:''},
       {id:17, category:'Drinks / مشروبات', name:'Fanta / فانتا', description:'Soft drink / مشروب غازي', price:'4', image:''},
-      {id:18, category:'Drinks / مشروبات', name:'Sprite / سبرايت', description:Soft drink / مشروب غازي', price:'4', image:''},
-      {id:19, category:'Drinks / مشروبات', name:'Cola / كولا', description:'Soft drink / مشروب غازي', price:'4', image:''},
-
+      {id:18, category:'Drinks / مشروبات', name:'Sprite / سبرايت', description:'Soft drink / مشروب غازي', price:'4', image:''},
+      {id:19, category:'Drinks / مشروبات', name:'Cola / كولا', description:'Soft drink / مشروب غازي', price:'4', image:''}
     ];
 
     const menuContainer = document.getElementById("menu");
     const cartContainer = document.getElementById("cart-items");
     let cart = [];
+    let checkoutStep = 0; // للتحكم بخطوات الإرسال
 
     function renderMenu(){
+      menuContainer.innerHTML = "";
       menuData.forEach(item => {
         const div = document.createElement("div");
         div.className = "item";
+        const inCart = cart.find(c => c.id === item.id);
+
         div.innerHTML = `
           <img src="${item.image || 'https://via.placeholder.com/300x150'}" alt="${item.name}" />
           <h3>${item.name}</h3>
           <p>${item.description}</p>
           <p><strong>${item.price} ريال</strong></p>
-          <button onclick="addToCart(${item.id})">اضف للسلة</button>
+          <div class="actions" id="actions-${item.id}">
+            ${inCart 
+              ? `
+                <button class="qty-btn" onclick="changeQty(${item.id}, -1)">-</button>
+                <span>${inCart.qty}</span>
+                <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+              `
+              : `<button onclick="addToCart(${item.id})">اضف للسلة</button>`
+            }
+          </div>
         `;
         menuContainer.appendChild(div);
       });
@@ -180,11 +225,25 @@
       } else {
         cart.push({...item, qty:1});
       }
+      renderMenu();
+      renderCart();
+    }
+
+    function changeQty(id, delta){
+      const found = cart.find(c => c.id === id);
+      if(found){
+        found.qty += delta;
+        if(found.qty <= 0){
+          cart = cart.filter(c => c.id !== id);
+        }
+      }
+      renderMenu();
       renderCart();
     }
 
     function removeFromCart(id){
       cart = cart.filter(c => c.id !== id);
+      renderMenu();
       renderCart();
     }
 
@@ -199,25 +258,59 @@
         `;
         cartContainer.appendChild(div);
       });
+
+      // السعر النهائي
+      const total = cart.reduce((sum,c) => sum + (parseFloat(c.price) || 0) * c.qty, 0);
+      const totalDiv = document.createElement("div");
+      totalDiv.style.marginTop = "1rem";
+      totalDiv.style.fontWeight = "bold";
+      totalDiv.innerText = "الإجمالي: " + total + " ريال";
+      cartContainer.appendChild(totalDiv);
     }
 
     function toggleCart(){
       document.getElementById("cart").classList.toggle("open");
     }
 
-    function checkout(){
+    async function checkout(){
+      if(cart.length === 0){
+        alert("السلة فارغة!");
+        return;
+      }
+
+      if(checkoutStep === 0){
+        toggleCart(); // يفتح السلة أول مرة
+        checkoutStep = 1;
+        return;
+      }
+
       const payload = {
         items: cart,
         total: cart.reduce((sum,c) => sum + (parseFloat(c.price) || 0) * c.qty, 0),
         time: new Date().toISOString()
       };
-      alert("سيتم إرسال الطلب: " + JSON.stringify(payload, null, 2));
-      // هنا تقدر ترسل البيانات للـ webhook حق n8n باستخدام fetch
-      // fetch('YOUR_N8N_WEBHOOK_URL', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+
+      // ======= (تعديلك المطلوب) إرسال البيانات إلى تيليجرام بدل الويبهوك =======
+      try {
+        if (tg && tg.sendData) {
+          tg.sendData(JSON.stringify(payload)); // يرسلها للبوت
+          try { tg.close(); } catch(_){}        // يغلق الويب-أب (اختياري)
+          // نفضي السلة محليًا بعد الإرسال (اختياري)
+          cart = [];
+          renderMenu();
+          renderCart();
+          checkoutStep = 0;
+          alert("✅ تم إرسال الطلب");
+        } else {
+          alert("⚠️ افتح الصفحة من داخل تيليجرام (WebApp)");
+        }
+      } catch (err) {
+        alert("❌ خطأ في الإرسال: " + err.message);
+      }
+      // ========================================================================
     }
 
     renderMenu();
   </script>
 </body>
 </html>
-
