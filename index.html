@@ -272,6 +272,7 @@
       document.getElementById("cart").classList.toggle("open");
     }
 
+    // ==== التعديل الوحيد: دالة checkout ترسل ملخصًا خفيفًا عبر sendData ====
     async function checkout(){
       if(cart.length === 0){
         alert("السلة فارغة!");
@@ -284,18 +285,42 @@
         return;
       }
 
+      // نقرأ طريقة الاستلام من باراميتر الرابط (إن وُجد)
+      const methodParam = new URLSearchParams(location.search).get('method') || 'pickup';
+
+      // نرسل ملخصًا خفيفًا فقط (بدون الوصف/التصنيف) لتجنّب كِبر الرسالة
+      const leanItems = cart.map(c => ({
+        id: c.id,
+        name: c.name,
+        qty: c.qty,
+        // السعر قد يكون "17-25" فنأخذ أول رقم
+        price: parseFloat(String(c.price).split('-')[0]) || 0
+      }));
+
+      const leanTotal = leanItems.reduce((s,i) => s + (i.qty * i.price), 0);
+
       const payload = {
-        items: cart,
-        total: cart.reduce((sum,c) => sum + (parseFloat(c.price) || 0) * c.qty, 0),
+        version: 1,
+        deliveryType: methodParam.toLowerCase(), // "delivery" | "pickup"
+        items: leanItems,                        // [{id,name,qty,price}]
+        total: leanTotal,                        // رقم
         time: new Date().toISOString()
       };
 
-      // ======= (تعديلك المطلوب) إرسال البيانات إلى تيليجرام بدل الويبهوك =======
       try {
+        const text = JSON.stringify(payload);
+
+        // تأكيد عدم تجاوز حد طول رسالة تيليجرام (~4096)
+        if (text.length > 3500) {
+          alert('السلة كبيرة جدًا، قلّل العناصر وحاول مرة أخرى.');
+          return;
+        }
+
         if (tg && tg.sendData) {
-          tg.sendData(JSON.stringify(payload)); // يرسلها للبوت
-          try { tg.close(); } catch(_){}        // يغلق الويب-أب (اختياري)
-          // نفضي السلة محليًا بعد الإرسال (اختياري)
+          tg.sendData(text);        // إرسال البيانات للبوت كـ web_app_data
+          try { tg.close(); } catch(_){}  // اختياري لإغلاق الويب-أب
+
+          // تنظيف محلي (اختياري)
           cart = [];
           renderMenu();
           renderCart();
@@ -307,8 +332,8 @@
       } catch (err) {
         alert("❌ خطأ في الإرسال: " + err.message);
       }
-      // ========================================================================
     }
+    // ========================================================================
 
     renderMenu();
   </script>
