@@ -285,7 +285,7 @@
 
       try {
         // 🔗 غير هذا بالرابط الخاص بالـ webhook في n8n
-        const response = await fetch("https://s9188.app.n8n.cloud/webhook-test/cart_submit", {
+        const response = await fetch("https://s9188.app.n8n.cloud/webhook/cart_submit", {
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify(payload)
@@ -309,3 +309,4 @@
   </script>
 </body>
 </html>
+
