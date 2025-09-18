@@ -4,33 +4,148 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>مطعم بروستا</title>
-  <!-- سكربت تيليجرام WebApp (لا تحذفه) -->
+  <!-- سكربت تيليجرام ويب-أب (لازم) -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    body { font-family: Tahoma, sans-serif; background:#f9f9f9; margin:0; padding:0; color:#333; }
-    header { background:#fff; padding:1rem; text-align:center; font-size:1.5rem; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.1); position:relative; }
-    .checkout-global { position:sticky; top:0; z-index:10; background:#f9f9f9; text-align:center; padding:0.5rem; }
-    .checkout-global button { background:#4CAF50; color:#fff; padding:0.8rem 1.2rem; border:none; border-radius:8px; cursor:pointer; font-size:1rem; }
-    .menu { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:1rem; padding:1rem; }
-    .item { background:#fff; border-radius:12px; padding:1rem; box-shadow:0 2px 6px rgba(0,0,0,0.1); display:flex; flex-direction:column; justify-content:space-between; }
-    .item img { width:100%; height:150px; object-fit:cover; border-radius:12px; margin-bottom:0.5rem; }
-    .item h3 { font-size:1.1rem; margin:0.5rem 0; }
-    .item p { font-size:0.9rem; margin:0.3rem 0; }
-    .item .actions { display:flex; align-items:center; justify-content:center; gap:0.5rem; margin-top:0.5rem; }
-    .item button { padding:0.6rem 0.8rem; background:#4CAF50; color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:1rem; }
-    .item .qty-btn { background:#2196F3; padding:0.4rem 0.7rem; font-size:1.2rem; font-weight:bold; }
-    .cart { position:fixed; top:0; right:-400px; width:350px; height:100%; background:#fff; box-shadow:-2px 0 6px rgba(0,0,0,0.2); padding:1rem; transition:right 0.3s ease; display:flex; flex-direction:column; }
-    .cart.open { right:0; }
-    .cart h2 { margin-top:0; }
-    .cart-items { flex:1; overflow-y:auto; }
-    .cart-item { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; }
-    .cart-item button { background:#f44336; border:none; color:#fff; padding:0.3rem 0.6rem; border-radius:6px; cursor:pointer; }
-    .cart-toggle { position:fixed; bottom:20px; right:20px; background:#2196F3; color:#fff; padding:1rem; border-radius:50%; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.3); }
+    body {
+      font-family: Tahoma, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background: #fff;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .checkout-global {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #f9f9f9;
+      text-align: center;
+      padding: 0.5rem;
+    }
+    .checkout-global button {
+      background: #4CAF50;
+      color: #fff;
+      padding: 0.8rem 1.2rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .menu {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+    }
+    .item {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .item img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 0.5rem;
+    }
+    .item h3 {
+      font-size: 1.1rem;
+      margin: 0.5rem 0;
+    }
+    .item p {
+      font-size: 0.9rem;
+      margin: 0.3rem 0;
+    }
+    .item .actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .item button {
+      padding: 0.6rem 0.8rem;
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .item .qty-btn {
+      background: #2196F3;
+      padding: 0.4rem 0.7rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    .cart {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 350px;
+      height: 100%;
+      background: #fff;
+      box-shadow: -2px 0 6px rgba(0,0,0,0.2);
+      padding: 1rem;
+      transition: right 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .cart.open {
+      right: 0;
+    }
+    .cart h2 {
+      margin-top: 0;
+    }
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .cart-item button {
+      background: #f44336;
+      border: none;
+      color: #fff;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .cart-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #2196F3;
+      color: #fff;
+      padding: 1rem;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
   </style>
 </head>
 <body>
   <header>منيو مطعم بروستا</header>
-
+  
+  <!-- زر إرسال الطلب تحت الهيدر -->
   <div class="checkout-global">
     <button onclick="checkout()">إرسال الطلب</button>
   </div>
@@ -43,8 +158,8 @@
   <div class="cart-toggle" onclick="toggleCart()">🛒</div>
 
   <script>
-    // تهيئة WebApp (اختياري للتوسيع)
-    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    // تهيئة بسيطة لويب-أب تيليجرام
+    const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
     if (tg) { try { tg.ready(); tg.expand(); } catch(_){} }
 
     const menuData = [
@@ -104,23 +219,31 @@
     function addToCart(id){
       const item = menuData.find(m => m.id === id);
       const found = cart.find(c => c.id === id);
-      if(found){ found.qty++; }
-      else { cart.push({...item, qty:1}); }
-      renderMenu(); renderCart();
+      if(found){
+        found.qty++;
+      } else {
+        cart.push({...item, qty:1});
+      }
+      renderMenu();
+      renderCart();
     }
 
     function changeQty(id, delta){
       const found = cart.find(c => c.id === id);
       if(found){
         found.qty += delta;
-        if(found.qty <= 0){ cart = cart.filter(c => c.id !== id); }
+        if(found.qty <= 0){
+          cart = cart.filter(c => c.id !== id);
+        }
       }
-      renderMenu(); renderCart();
+      renderMenu();
+      renderCart();
     }
 
     function removeFromCart(id){
       cart = cart.filter(c => c.id !== id);
-      renderMenu(); renderCart();
+      renderMenu();
+      renderCart();
     }
 
     function renderCart(){
@@ -134,7 +257,9 @@
         `;
         cartContainer.appendChild(div);
       });
-      const total = cart.reduce((sum,c) => sum + ((parseFloat(c.price)||0) * c.qty), 0);
+
+      // السعر النهائي
+      const total = cart.reduce((sum,c) => sum + (parseFloat(c.price) || 0) * c.qty, 0);
       const totalDiv = document.createElement("div");
       totalDiv.style.marginTop = "1rem";
       totalDiv.style.fontWeight = "bold";
@@ -142,46 +267,60 @@
       cartContainer.appendChild(totalDiv);
     }
 
-    function toggleCart(){ document.getElementById("cart").classList.toggle("open"); }
+    function toggleCart(){
+      document.getElementById("cart").classList.toggle("open");
+    }
 
+    // ===== إرسال الطلب عبر Webhook إلى n8n مع تمرير chat_id =====
     async function checkout(){
-      if(cart.length === 0){ alert("السلة فارغة!"); return; }
-      if(checkoutStep === 0){ toggleCart(); checkoutStep = 1; return; }
+      if(cart.length === 0){
+        alert("السلة فارغة!");
+        return;
+      }
 
-      // 🔹 استخرج chat_id من Telegram WebApp (أو من الـURL كخيار احتياطي)
+      // أول ضغطة: افتح السلة للعميل
+      if(checkoutStep === 0){
+        toggleCart();
+        checkoutStep = 1;
+        return;
+      }
+
+      // نقرأ chat_id من Telegram WebApp (إن وُجد)
       const chat_id =
-        (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) ||
-        new URLSearchParams(location.search).get('chat_id');
+        (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user && window.Telegram.WebApp.initDataUnsafe.user.id)
+          ? window.Telegram.WebApp.initDataUnsafe.user.id
+          : null;
 
-      // 🔹 payload واحد فقط (لا تكرر تعريفه)
       const payload = {
         items: cart,
-        total: cart.reduce((s, c) => s + ((parseFloat(c.price) || 0) * c.qty), 0),
+        total: cart.reduce((s,c) => s + ((parseFloat(c.price)||0) * c.qty), 0),
         time: new Date().toISOString(),
-        chat_id: chat_id || null
+        chat_id: chat_id
       };
 
       try {
-        // ✅ الإرسال إلى Webhook (Production URL)
-        const response = await fetch("https://s9188.app.n8n.cloud/webhook/cart_submit", {
+        const res = await fetch("https://s9188.app.n8n.cloud/webhook/cart_submit", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {"Content-Type": "application/json"},
           body: JSON.stringify(payload)
         });
 
-        if(response.ok){
-          alert("✅ تم إرسال الطلب بنجاح!");
-          cart = []; renderMenu(); renderCart(); checkoutStep = 0;
-          // (اختياري) اغلاق الويب-أب
-          try { tg && tg.close && tg.close(); } catch(_) {}
+        if(res.ok){
+          try { window.Telegram?.WebApp?.close(); } catch(_) {}
+          alert("تم إرسال الطلب بنجاح! ✅");
+          cart = [];
+          renderMenu();
+          renderCart();
+          checkoutStep = 0;
         } else {
-          const t = await response.text().catch(()=> '');
-          alert("⚠️ فشل الإرسال: " + (t || response.status));
+          const t = await res.text();
+          alert("⚠️ فشل الإرسال\n" + t);
         }
       } catch (err) {
-        alert("❌ خطأ في الاتصال: " + err.message);
+        alert("❌ Load failed: خطأ في الاتصال");
       }
     }
+    // ===========================================================
 
     renderMenu();
   </script>
