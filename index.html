@@ -271,6 +271,24 @@
       document.getElementById("cart").classList.toggle("open");
     }
 
+    /* ==== إضافات لضمان وصول chat_id وقيم رقمية صحيحة ==== */
+    function getChatId() {
+      const fromTG = window.Telegram?.WebApp?.initDataUnsafe?.user?.id ?? null;
+      if (fromTG) return Number(fromTG);
+      const params = new URLSearchParams(location.search);
+      const fromURL = params.get('chat_id');
+      return fromURL ? Number(fromURL) : null;
+    }
+
+    function sanitizeCartItems(items) {
+      return items.map(i => {
+        const priceNum = parseFloat(String(i.price).toString().split('-')[0]) || 0; // يدعم "17-25"
+        const qtyNum = Number(i.qty || 0);
+        return { id: i.id, name: i.name, price: priceNum, qty: qtyNum };
+      });
+    }
+    /* ===================================================== */
+
     // ===== إرسال الطلب عبر Webhook إلى n8n مع تمرير chat_id =====
     async function checkout(){
       if(cart.length === 0){
@@ -285,17 +303,22 @@
         return;
       }
 
-      // نقرأ chat_id من Telegram WebApp (إن وُجد)
-      const chat_id =
-        (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user && window.Telegram.WebApp.initDataUnsafe.user.id)
-          ? window.Telegram.WebApp.initDataUnsafe.user.id
-          : null;
+      // تأكد أننا داخل تيليجرام
+      if(!window.Telegram?.WebApp){
+        alert("⚠️ افتح المنيو من داخل تيليجرام عبر زر البوت.");
+        return;
+      }
+
+      const chat_id = getChatId(); // أهم شيء
+      const cleanItems = sanitizeCartItems(cart);
+      const total = cleanItems.reduce((s,c) => s + (c.price * c.qty), 0);
 
       const payload = {
-        items: cart,
-        total: cart.reduce((s,c) => s + ((parseFloat(c.price)||0) * c.qty), 0),
+        items: cleanItems,
+        total,
         time: new Date().toISOString(),
-        chat_id: chat_id
+        chat_id,
+        source: "webapp"
       };
 
       try {
@@ -306,8 +329,8 @@
         });
 
         if(res.ok){
-          try { window.Telegram?.WebApp?.close(); } catch(_) {}
           alert("تم إرسال الطلب بنجاح! ✅");
+          try { window.Telegram.WebApp.close(); } catch(_) {}
           cart = [];
           renderMenu();
           renderCart();
